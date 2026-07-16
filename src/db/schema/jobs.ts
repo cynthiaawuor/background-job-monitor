@@ -43,3 +43,6 @@ export const jobs = pgTable("jobs", {
 
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+export type Job = typeof jobs.$inferInsert;
+export type JobPriority = typeof jobPriorityEnum;

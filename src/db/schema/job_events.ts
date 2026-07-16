@@ -34,3 +34,5 @@ export const jobEvents = pgTable("job_events", {
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export type JobEvent = typeof jobEvents.$inferInsert;

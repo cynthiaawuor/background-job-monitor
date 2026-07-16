@@ -17,3 +17,10 @@ export const jobsRelations = relations(jobs, ({ one, many }) => ({
 export const workersRelations = relations(workers, ({ many }) => ({
   jobs: many(jobs),
 }));
+
+export const jobEventsRelations = relations(jobEvents, ({ one }) => ({
+  job: one(jobs, {
+    fields: [jobEvents.jobId],
+    references: [jobs.id],
+  }),
+}));
