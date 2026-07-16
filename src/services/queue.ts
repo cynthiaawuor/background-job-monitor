@@ -35,6 +35,9 @@ export const enqueueJob = async (
 export const claimNextJob = async (workerId: string) => {
   return await db.transaction(async (tx) => {
     const job = await findOldestQueuedJob(tx);
+    if (!job) {
+      return null;
+    }
 
     /* A worker claims the oldest queued job (arrival order)
      *  and marks it in-flight with its identity and a start time.
@@ -49,7 +52,7 @@ export const claimNextJob = async (workerId: string) => {
       return null;
     }
 
-    //Save history of jobEvents
+    //Save history of claimed jobEvents
     await tx.insert(jobEvents).values({
       jobId: claimedJob.id,
       workerId,

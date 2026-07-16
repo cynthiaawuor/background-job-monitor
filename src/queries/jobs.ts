@@ -29,6 +29,6 @@ export const findOldestQueuedJob = async (tx: any) => {
     LIMIT 1
     FOR UPDATE SKIP LOCKED
     `);
-  // if(result.length)
+
   return result.rows[0] ?? null;
 };

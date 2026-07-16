@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { workers } from "../db/schema/workers.js";
 import { db } from "../index.js";
 
@@ -21,5 +22,23 @@ export const createWorker = async (id: string) => {
     })
     .onConflictDoNothing()
     .returning();
+  return worker;
+};
+
+export const updateHeartbeat = async (workerId: string) => {
+  await db
+    .update(workers)
+    .set({
+      lastHeartbeat: new Date(),
+      updatedAt: new Date(),
+    })
+    .where(eq(workers.id, workerId));
+};
+
+export const findWorkerById = async (workerId: string) => {
+  const [worker] = await db
+    .select()
+    .from(workers)
+    .where(eq(workers.id, workerId));
   return worker;
 };
