@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { jobs, type Job } from "../db/schema/jobs.js";
 import { db } from "../index.js";
 
@@ -31,4 +31,17 @@ export const findOldestQueuedJob = async (tx: any) => {
     `);
 
   return result.rows[0] ?? null;
+};
+
+export const reclaimWorkerJobs = async (tx: any, workerId: string) => {
+  return await tx
+    .update(jobs)
+    .set({
+      state: "queued",
+      workerId: null,
+      startedAt: null,
+      updatedAt: new Date(),
+    })
+    .where(and(eq(jobs.workerId, workerId), eq(jobs.state, "in_flight")))
+    .returning();
 };

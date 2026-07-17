@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { jobs } from "../db/schema/jobs.js";
 import { db } from "../index.js";
 import { createJobEvent } from "../queries/job_events.js";
@@ -6,9 +6,11 @@ import {
   createJob,
   findJobById,
   findOldestQueuedJob,
+  reclaimWorkerJobs,
   updateJob,
 } from "../queries/jobs.js";
 import { jobEvents } from "../db/schema/job_events.js";
+import { markWorkersDead } from "../queries/workers.js";
 
 export const enqueueJob = async (
   type: string,
@@ -62,7 +64,7 @@ export const claimNextJob = async (workerId: string) => {
   });
 };
 
-export const completeJob = async (jobId: string) => {
+export const completeJob = async (jobId: string, workerId: string) => {
   const job = await findJobById(jobId);
   if (!job) {
     return { message: "Job Not Found." };
@@ -71,21 +73,46 @@ export const completeJob = async (jobId: string) => {
     return { message: "Only jobs in-flight can be completed" };
   }
 
-  const updatedJob = await updateJob(jobId, {
-    state: "completed",
-    finishedAt: new Date(),
-  });
+  if (job.workerId !== workerId) {
+    return { message: "Worker nolonger owns this job" };
+  }
+  /**
+   * Update job only if worker still owns it
+   */
+
+  const updatedJob = await db
+    .update(jobs)
+    .set({
+      state: "completed",
+      finishedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(jobs.id, jobId),
+        eq(jobs.workerId, workerId),
+        eq(jobs.state, "in_flight"),
+      ),
+    )
+    .returning();
+
+  if (!updateJob) {
+    return { message: "Job already reclaimed by another worker." };
+  }
   //update job event history
 
   await createJobEvent({
     jobId,
-    workerId: job.id,
+    workerId,
     event: "completed",
   });
   return updatedJob;
 };
 
-export const failJob = async (jobId: string, error: unknown) => {
+export const failJob = async (
+  jobId: string,
+  workerId: string,
+  error: unknown,
+) => {
   const job = await findJobById(jobId);
   if (!job) {
     return { message: "Job Not Found" };
@@ -93,15 +120,59 @@ export const failJob = async (jobId: string, error: unknown) => {
   if (job.state !== "in_flight") {
     return { message: "Only jobs in-flight can fail" };
   }
+  if (job.workerId !== workerId) {
+    return { message: "Worker nolonger owns this job" };
+  }
 
   const isErrorObject = error instanceof Error;
   const message = isErrorObject ? error.message : String(error);
   const stackTrace = isErrorObject ? error.stack : undefined;
-  const updatedJob = await updateJob(jobId, {
-    state: "failed",
-    error: message,
-    stackTrace,
-    finishedAt: new Date(),
-  });
+  const updatedJob = await db
+    .update(jobs)
+    .set({
+      state: "failed",
+      error: message,
+      workerId,
+      stackTrace,
+      finishedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(jobs.id, jobId),
+        eq(jobs.workerId, workerId),
+        eq(jobs.state, "in_flight"),
+      ),
+    )
+    .returning();
+  /**
+   * Only current owner may fail the job
+   */
+  if (!updateJob) {
+    return { message: "Job already reclaimed by another worker." };
+  }
   return updatedJob;
+};
+
+export const reclaimJobsFromDeadWorker = async () => {
+  const timeout = 30000;
+  const cutoffTime = new Date(Date.now() - timeout);
+  await db.transaction(async (tx) => {
+    const deadWorkers = await markWorkersDead(tx, cutoffTime);
+
+    for (const worker of deadWorkers) {
+      const reclaimedJobs = await reclaimWorkerJobs(tx, worker.id);
+      if (!reclaimedJobs) {
+        continue;
+      }
+
+      for (const job of reclaimedJobs) {
+        console.log("Job---------------", job);
+        await createJobEvent({
+          jobId: job.id,
+          workerId: worker.id,
+          event: "queued",
+        });
+      }
+    }
+  });
 };
