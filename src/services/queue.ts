@@ -11,6 +11,7 @@ import {
 } from "../queries/jobs.js";
 import { jobEvents } from "../db/schema/job_events.js";
 import { markWorkersDead } from "../queries/workers.js";
+import { calculateBackOff } from "./backoff.js";
 
 export const enqueueJob = async (
   type: string,
@@ -127,6 +128,39 @@ export const failJob = async (
   const isErrorObject = error instanceof Error;
   const message = isErrorObject ? error.message : String(error);
   const stackTrace = isErrorObject ? error.stack : undefined;
+
+  /** ****************************************************
+   * Retries remaining
+   ********************************************************/
+
+  const nextRetryCount = job.retryCount + 1;
+  if (nextRetryCount <= job.maxRetries) {
+    const delayInMilliSeconds = calculateBackOff(nextRetryCount) * 1000;
+
+    const retryAt = new Date(Date.now() + delayInMilliSeconds);
+
+    await db
+      .update(jobs)
+      .set({
+        state: "delayed",
+        retryCount: nextRetryCount,
+        retryAt: retryAt,
+        error: message,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(jobs.id, jobId),
+          eq(jobs.workerId, workerId),
+          eq(jobs.state, "in_flight"),
+        ),
+      )
+      .returning();
+  }
+
+  /**--------------------------------------------------------
+   * No retries remaining
+   ----------------------------------------------------------*/
   const updatedJob = await db
     .update(jobs)
     .set({
@@ -150,6 +184,7 @@ export const failJob = async (
   if (!updateJob) {
     return { message: "Job already reclaimed by another worker." };
   }
+
   return updatedJob;
 };
 

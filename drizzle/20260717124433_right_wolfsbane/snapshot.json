@@ -1,0 +1,474 @@
+{
+  "version": "8",
+  "dialect": "postgres",
+  "id": "597965fd-7fe2-471b-8d5a-2d390cda5795",
+  "prevIds": [
+    "e9428802-379f-45a2-9a47-a976adc55e56"
+  ],
+  "ddl": [
+    {
+      "values": [
+        "queued",
+        "claimed",
+        "completed",
+        "failed",
+        "reclaimed",
+        "retried"
+      ],
+      "name": "job_event",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "values": [
+        "high",
+        "normal"
+      ],
+      "name": "job_priority",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "values": [
+        "queued",
+        "in_flight",
+        "delayed",
+        "completed",
+        "failed"
+      ],
+      "name": "job_state",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "values": [
+        "alive",
+        "dead"
+      ],
+      "name": "worker_status",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "job_events",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "jobs",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "workers",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "job_events"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "job_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "job_events"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "worker_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "job_events"
+    },
+    {
+      "type": "job_event",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "event",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "job_events"
+    },
+    {
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "metadata",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "job_events"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "job_events"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "jobs"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "type",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "jobs"
+    },
+    {
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "payload",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "jobs"
+    },
+    {
+      "type": "job_priority",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'normal'",
+      "generated": null,
+      "identity": null,
+      "name": "priority",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "jobs"
+    },
+    {
+      "type": "job_state",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'queued'",
+      "generated": null,
+      "identity": null,
+      "name": "state",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "jobs"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "worker_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "jobs"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "0",
+      "generated": null,
+      "identity": null,
+      "name": "retry_count",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "jobs"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "3",
+      "generated": null,
+      "identity": null,
+      "name": "max_retry",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "jobs"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "retry_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "jobs"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "error",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "jobs"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "stack_trace",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "jobs"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "jobs"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "started_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "jobs"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "finished_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "jobs"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "jobs"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "workers"
+    },
+    {
+      "type": "worker_status",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'alive'",
+      "generated": null,
+      "identity": null,
+      "name": "status",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "workers"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "last_heartbeat",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "workers"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "workers"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "workers"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "job_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "jobs",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "job_events_job_id_jobs_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "job_events"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "worker_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "workers",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "SET NULL",
+      "name": "jobs_worker_id_workers_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "jobs"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "job_events_pkey",
+      "schema": "public",
+      "table": "job_events",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "jobs_pkey",
+      "schema": "public",
+      "table": "jobs",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "workers_pkey",
+      "schema": "public",
+      "table": "workers",
+      "entityType": "pks"
+    }
+  ],
+  "renames": []
+}

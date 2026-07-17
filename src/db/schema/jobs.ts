@@ -1,4 +1,5 @@
 import {
+  integer,
   jsonb,
   pgEnum,
   pgTable,
@@ -11,6 +12,7 @@ import { workers } from "./workers.js";
 export const jobStateEnum = pgEnum("job_state", [
   "queued",
   "in_flight",
+  "delayed",
   "completed",
   "failed",
 ]);
@@ -30,6 +32,12 @@ export const jobs = pgTable("jobs", {
   workerId: text("worker_id").references(() => workers.id, {
     onDelete: "set null",
   }),
+
+  retryCount: integer("retry_count").default(0).notNull(),
+
+  maxRetries: integer("max_retry").default(3).notNull(),
+
+  retryAt: timestamp("retry_at"),
 
   error: text("error"),
 
