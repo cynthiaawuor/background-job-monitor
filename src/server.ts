@@ -6,6 +6,7 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import queueRoutes from "./routes/queue.js";
 import jobRoutes from "./routes/jobs.js";
 import workerRoutes from "./routes/workers.js";
+import { startWebSocketServer } from "./websocket/server.js";
 
 const app = express();
 
@@ -26,7 +27,9 @@ app.use(errorHandler);
 const PORT = 3000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`REST Server running on http://localhost:${PORT}`);
 });
 
 export const db = drizzle(process.env.DB_URL!);
+
+startWebSocketServer(3001);

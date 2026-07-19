@@ -12,6 +12,8 @@ import {
 import { jobEvents } from "../db/schema/job_events.js";
 import { markWorkersDead } from "../queries/workers.js";
 import { calculateBackOff } from "./backoff.js";
+import { WebSocketEvents } from "../websocket/events.js";
+import { broadcast } from "../websocket/server.js";
 
 export const enqueueJob = async (
   type: string,
@@ -25,6 +27,10 @@ export const enqueueJob = async (
   await createJobEvent({
     jobId: job.id,
     event: "queued",
+  });
+  broadcast({
+    type: WebSocketEvents.JOB_ENQUEUED,
+    job,
   });
   return job;
 };
@@ -60,6 +66,11 @@ export const claimNextJob = async (workerId: string) => {
       jobId: claimedJob.id,
       workerId,
       event: "claimed",
+    });
+
+    broadcast({
+      type: WebSocketEvents.JOB_CLAIMED,
+      claimedJob,
     });
     return claimedJob;
   });
@@ -105,6 +116,10 @@ export const completeJob = async (jobId: string, workerId: string) => {
     jobId,
     workerId,
     event: "completed",
+  });
+  broadcast({
+    type: WebSocketEvents.JOB_COMPLETED,
+    updatedJob,
   });
   return updatedJob;
 };
@@ -184,7 +199,10 @@ export const failJob = async (
   if (!updateJob) {
     return { message: "Job already reclaimed by another worker." };
   }
-
+  broadcast({
+    type: WebSocketEvents.JOB_FAILED,
+    updatedJob,
+  });
   return updatedJob;
 };
 
@@ -199,12 +217,21 @@ export const reclaimJobsFromDeadWorker = async () => {
       if (!reclaimedJobs) {
         continue;
       }
+      broadcast({
+        type: WebSocketEvents.WORKER_UPDATED,
+        worker,
+      });
 
       for (const job of reclaimedJobs) {
         await createJobEvent({
           jobId: job.id,
           workerId: worker.id,
           event: "queued",
+        });
+
+        broadcast({
+          type: WebSocketEvents.JOB_RECLAIMED,
+          job,
         });
       }
     }
