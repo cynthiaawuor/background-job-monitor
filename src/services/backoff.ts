@@ -5,5 +5,4 @@ export const calculateBackOff = (retryCount: number): number => {
   return Math.pow(2, retryCount) * 5;
 };
 
-console.log(calculateBackOff(1));
 calculateBackOff(0);

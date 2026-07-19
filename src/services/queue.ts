@@ -1,6 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
 import { jobs } from "../db/schema/jobs.js";
-import { db } from "../index.js";
+import { db } from "../server.js";
 import { createJobEvent } from "../queries/job_events.js";
 import {
   createJob,
@@ -201,7 +201,6 @@ export const reclaimJobsFromDeadWorker = async () => {
       }
 
       for (const job of reclaimedJobs) {
-        console.log("Job---------------", job);
         await createJobEvent({
           jobId: job.id,
           workerId: worker.id,
@@ -209,5 +208,61 @@ export const reclaimJobsFromDeadWorker = async () => {
         });
       }
     }
+  });
+};
+
+export const retryJob = async (jobId: string) => {
+  return await db.transaction(async (tx) => {
+    const [job] = await tx.select().from(jobs).where(eq(jobs.id, jobId));
+
+    /**
+     * If job is not found
+     */
+
+    if (!job) {
+      throw new Error("Job not found");
+    }
+    /**
+     * Job found but not a failed job
+     */
+    if (job.state !== "failed") {
+      throw new Error("Only failed jobs can be retried");
+    }
+
+    /**
+     * Move job back to queue
+     */
+
+    const [updatedJob] = await tx
+      .update(jobs)
+      .set({
+        state: "queued",
+        workerId: null,
+        startedAt: null,
+        finishedAt: null,
+        retryAt: null,
+        error: null,
+        stackTrace: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(jobs.id, jobId))
+      .returning();
+
+    if (!updatedJob) return;
+
+    /**
+     * Update job history (job_events table)
+     */
+    await createJobEvent({
+      jobId: updatedJob.id,
+      workerId: null,
+      event: "retried",
+      metadata: {},
+    });
+
+    return {
+      status: 200,
+      job: updatedJob,
+    };
   });
 };

@@ -1,6 +1,6 @@
-import { and, eq, gt, lt } from "drizzle-orm";
+import { and, desc, eq, gt, lt } from "drizzle-orm";
 import { workers } from "../db/schema/workers.js";
-import { db } from "../index.js";
+import { db } from "../server.js";
 
 /**
  * 
@@ -61,4 +61,15 @@ export const markWorkersDead = async (tx: any, interval: Date) => {
       and(eq(workers.status, "alive"), lt(workers.lastHeartbeat, interval)),
     )
     .returning();
+};
+
+export const getWorkers = async () => {
+  return await db
+    .select({
+      id: workers.id,
+      status: workers.status,
+      lastHeartBeat: workers.lastHeartbeat,
+    })
+    .from(workers)
+    .orderBy(desc(workers.lastHeartbeat));
 };
