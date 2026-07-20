@@ -19,7 +19,7 @@ export const QueueDepth = () => {
       }
     };
     fetchQueueDepth();
-  });
+  }, []);
 
   if (error) {
     return <p>{error}</p>;

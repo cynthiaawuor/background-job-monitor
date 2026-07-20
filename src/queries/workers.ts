@@ -68,7 +68,7 @@ export const getWorkers = async () => {
     .select({
       id: workers.id,
       status: workers.status,
-      lastHeartBeat: workers.lastHeartbeat,
+      lastHeartbeat: workers.lastHeartbeat,
     })
     .from(workers)
     .orderBy(desc(workers.lastHeartbeat));

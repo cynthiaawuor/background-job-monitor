@@ -1,5 +1,6 @@
 // import "./App.css";
 import { QueueDepth } from "./components/queueDepth";
+import { Workers } from "./components/workers";
 
 export default function App() {
   return (
@@ -12,9 +13,9 @@ export default function App() {
 
       <CompletedJobs />
 
-      <FailedJobs />
+      <FailedJobs /> */}
 
-      <Workers /> */}
+      <Workers />
     </main>
   );
 }
