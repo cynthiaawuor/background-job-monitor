@@ -2,6 +2,7 @@ import "dotenv/config";
 import { drizzle } from "drizzle-orm/node-postgres";
 
 import express from "express";
+import cors from "cors";
 import { errorHandler } from "./middleware/errorHandler.js";
 import queueRoutes from "./routes/queue.js";
 import jobRoutes from "./routes/jobs.js";
@@ -11,6 +12,7 @@ import { startWebSocketServer } from "./websocket/server.js";
 const app = express();
 
 app.use(express.json());
+app.use(cors());
 
 app.use("/jobs", jobRoutes);
 app.use("/queue", queueRoutes);
