@@ -1,4 +1,5 @@
 // import "./App.css";
+import { InFlightJobs } from "./components/InFlightJobs";
 import { QueueDepth } from "./components/queueDepth";
 import { Workers } from "./components/workers";
 
@@ -9,9 +10,9 @@ export default function App() {
 
       <QueueDepth />
 
-      {/* <InFlightJobs />
+      <InFlightJobs />
 
-      <CompletedJobs />
+      {/* <CompletedJobs />
 
       <FailedJobs /> */}
 
