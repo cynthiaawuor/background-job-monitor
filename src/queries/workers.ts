@@ -20,7 +20,14 @@ export const createWorker = async (id: string) => {
       id,
       status: "alive",
     })
-    .onConflictDoNothing()
+    .onConflictDoUpdate({
+      target: workers.id,
+      set: {
+        status: "alive",
+        lastHeartbeat: new Date(),
+        updatedAt: new Date(),
+      },
+    })
     .returning();
   return worker;
 };
