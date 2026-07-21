@@ -1,32 +1,33 @@
-import { useEffect, useState } from "react";
 import type { QueueDepth as QueueDepthType } from "../types/queue";
-import { getQueueDepth } from "../../api/queue";
 
-export const QueueDepth = () => {
-  const [queueDepth, setQueueDepth] = useState<QueueDepthType[]>([]);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+type Props = {
+  queueDepth: QueueDepthType[];
+};
+export const QueueDepth = ({ queueDepth }: Props) => {
+  // const [queueDepth, setQueueDepth] = useState<QueueDepthType[]>([]);
+  // const [error, setError] = useState("");
+  // const [isLoadings, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchQueueDepth = async () => {
-      try {
-        const data = await getQueueDepth();
-        setQueueDepth(data);
-      } catch (error) {
-        setError("Failed to load queue depth");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchQueueDepth();
-  }, []);
+  // useEffect(() => {
+  //   const fetchQueueDepth = async () => {
+  //     try {
+  //       const data = await getQueueDepth();
+  //       setQueueDepth(data);
+  //     } catch (error) {
+  //       setError("Failed to load queue depth");
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+  //   fetchQueueDepth();
+  // }, []);
 
-  if (error) {
-    return <p>{error}</p>;
-  }
-  if (isLoading) {
-    return <p>Loading queue depth...</p>;
-  }
+  // if (error) {
+  //   return <p>{error}</p>;
+  // }
+  // if (isLoading) {
+  //   return <p>Loading queue depth...</p>;
+  // }
   return (
     <section>
       <h2>Queue Depth</h2>

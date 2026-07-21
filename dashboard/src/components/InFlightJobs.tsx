@@ -1,36 +1,33 @@
 import { useEffect, useState } from "react";
-
-import { getInFlightJobs } from "../../api/jobs";
-
 import type { InFlightJob } from "../types/job";
 
-export const InFlightJobs = () => {
-  const [jobs, setJobs] = useState<InFlightJob[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+type Props = {
+  inFlightJobs: InFlightJob[];
+};
 
+const formatElapsed = (startedAt: string | null, now: number) => {
+  if (!startedAt) {
+    return "-";
+  }
+
+  const elapsedSeconds = Math.max(
+    0,
+    Math.floor((now - new Date(startedAt).getTime()) / 1000),
+  );
+  const minutes = Math.floor(elapsedSeconds / 60);
+  const seconds = elapsedSeconds % 60;
+
+  return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
+};
+
+export const InFlightJobs = ({ inFlightJobs }: Props) => {
+  const [now, setNow] = useState(() => Date.now());
+
+  // Ticks once a second so elapsed time updates without a page refresh
   useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const data = await getInFlightJobs();
-        setJobs(data);
-      } catch {
-        setError("Failed to load in-flight jobs.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchJobs();
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
   }, []);
-
-  if (loading) {
-    return <p>Loading in-flight jobs...</p>;
-  }
-
-  if (error) {
-    return <p>{error}</p>;
-  }
 
   return (
     <section>
@@ -43,11 +40,12 @@ export const InFlightJobs = () => {
             <th>Type</th>
             <th>Worker</th>
             <th>Started At</th>
+            <th>Elapsed</th>
           </tr>
         </thead>
 
         <tbody>
-          {jobs.map((job) => (
+          {inFlightJobs.map((job) => (
             <tr key={job.id}>
               <td>{job.id}</td>
 
@@ -58,6 +56,8 @@ export const InFlightJobs = () => {
               <td>
                 {job.startedAt ? new Date(job.startedAt).toLocaleString() : "-"}
               </td>
+
+              <td>{formatElapsed(job.startedAt, now)}</td>
             </tr>
           ))}
         </tbody>

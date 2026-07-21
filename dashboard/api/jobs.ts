@@ -6,12 +6,12 @@ export const getInFlightJobs = async (): Promise<InFlightJob[]> => {
   return data;
 };
 
-export const getCompletedJobs = async (): Promise<CompletedJob> => {
+export const getCompletedJobs = async (): Promise<CompletedJob[]> => {
   const { data } = await api.get("/jobs/completed");
   return data;
 };
 
-export const getFailedJobs = async (): Promise<FailedJob> => {
+export const getFailedJobs = async (): Promise<FailedJob[]> => {
   const { data } = await api.get("/jobs/failed");
 
   return data;

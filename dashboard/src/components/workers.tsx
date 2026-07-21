@@ -1,35 +1,34 @@
-import { useEffect, useState } from "react";
-
-import { getWorkers } from "../../api/workers";
 import type { Worker } from "../types/worker";
+type Props = {
+  workers: Worker[];
+};
+export const Workers = ({ workers }: Props) => {
+  //   const [workers, setWorkers] = useState<Worker[]>([]);
+  //   const [error, setError] = useState("");
+  //   const [loading, setIsLoading] = useState(false);
 
-export const Workers = () => {
-  const [workers, setWorkers] = useState<Worker[]>([]);
-  const [error, setError] = useState("");
-  const [loading, setIsLoading] = useState(false);
+  //   useEffect(() => {
+  //     const fetchWokers = async () => {
+  //       try {
+  //         const workers = await getWorkers();
 
-  useEffect(() => {
-    const fetchWokers = async () => {
-      try {
-        const workers = await getWorkers();
+  //         setWorkers(workers);
+  //       } catch (error) {
+  //         console.log({ error });
+  //         setError("Failed to load workers");
+  //       } finally {
+  //         setIsLoading(false);
+  //       }
+  //     };
+  //     fetchWokers();
+  //   }, []);
 
-        setWorkers(workers);
-      } catch (error) {
-        console.log({ error });
-        setError("Failed to load workers");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchWokers();
-  }, []);
-
-  if (error) {
-    return <p>{error}</p>;
-  }
-  if (loading) {
-    return <p>Loading workers</p>;
-  }
+  //   if (error) {
+  //     return <p>{error}</p>;
+  //   }
+  //   if (loading) {
+  //     return <p>Loading workers</p>;
+  //   }
   return (
     <section>
       <h2>Workers</h2>
