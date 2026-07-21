@@ -32,37 +32,53 @@ export const CompletedJobs = ({ completedJobs }: Props) => {
   //   }
 
   return (
-    <section>
-      <h2>Completed Jobs</h2>
+    <section className="flex flex-col overflow-hidden rounded-xl border border-hairline bg-surface shadow-sm">
+      <div className="border-b border-hairline px-5 py-4">
+        <h2 className="text-base font-semibold text-ink">Completed Jobs</h2>
+      </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Job ID</th>
-            <th>Type</th>
-            <th>Worker</th>
-            <th>Finished At</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {completedJobs.map((job) => (
-            <tr key={job.id}>
-              <td>{job.id}</td>
-
-              <td>{job.type}</td>
-
-              <td>{job.workerId ?? "-"}</td>
-
-              <td>
-                {job.finishedAt
-                  ? new Date(job.finishedAt).toLocaleString()
-                  : "-"}
-              </td>
+      <div className="max-h-96 overflow-auto">
+        <table className="w-full text-left text-sm">
+          <thead className="sticky top-0 bg-surface">
+            <tr className="border-b border-hairline text-xs tracking-wide text-ink-muted uppercase">
+              <th className="px-5 py-2.5 font-medium">Job ID</th>
+              <th className="px-5 py-2.5 font-medium">Type</th>
+              <th className="px-5 py-2.5 font-medium">Worker</th>
+              <th className="px-5 py-2.5 font-medium">Finished At</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody className="divide-y divide-hairline">
+            {completedJobs.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="px-5 py-6 text-center text-ink-muted">
+                  No completed jobs yet.
+                </td>
+              </tr>
+            ) : (
+              completedJobs.map((job) => (
+                <tr key={job.id} className="hover:bg-ink/5">
+                  <td className="max-w-40 truncate px-5 py-3 font-mono text-xs text-ink-secondary">
+                    {job.id}
+                  </td>
+
+                  <td className="px-5 py-3 text-ink">{job.type}</td>
+
+                  <td className="px-5 py-3 font-mono text-xs text-ink-secondary">
+                    {job.workerId ?? "-"}
+                  </td>
+
+                  <td className="px-5 py-3 text-ink-secondary">
+                    {job.finishedAt
+                      ? new Date(job.finishedAt).toLocaleString()
+                      : "-"}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 };

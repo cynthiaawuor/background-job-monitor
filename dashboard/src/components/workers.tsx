@@ -30,36 +30,64 @@ export const Workers = ({ workers }: Props) => {
   //     return <p>Loading workers</p>;
   //   }
   return (
-    <section>
-      <h2>Workers</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Worker ID</th>
-            <th>Status</th>
-            <th>Last Heartbeat</th>
-          </tr>
-        </thead>
-        <tbody>
-          {workers.map((worker) => (
-            <tr key={worker.id}>
-              <td>{worker.id}</td>
-              <td>
-                <span
-                  style={{
-                    color: worker.status === "alive" ? "green" : "red",
-                    fontWeight: "normal",
-                  }}
-                >
-                  {worker.status}
-                </span>
-              </td>
+    <section className="flex flex-col overflow-hidden rounded-xl border border-hairline bg-surface shadow-sm">
+      <div className="border-b border-hairline px-5 py-4">
+        <h2 className="text-base font-semibold text-ink">Workers</h2>
+      </div>
 
-              <td>{new Date(worker.lastHeartbeat).toLocaleString()}</td>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-hairline text-xs tracking-wide text-ink-muted uppercase">
+              <th className="px-5 py-2.5 font-medium">Worker ID</th>
+              <th className="px-5 py-2.5 font-medium">Status</th>
+              <th className="px-5 py-2.5 font-medium">Last Heartbeat</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-hairline">
+            {workers.length === 0 ? (
+              <tr>
+                <td colSpan={3} className="px-5 py-6 text-center text-ink-muted">
+                  No workers registered.
+                </td>
+              </tr>
+            ) : (
+              workers.map((worker) => {
+                const isAlive = worker.status === "alive";
+                return (
+                  <tr key={worker.id} className="hover:bg-ink/5">
+                    <td className="px-5 py-3 font-mono text-xs text-ink-secondary">
+                      {worker.id}
+                    </td>
+                    <td className="px-5 py-3">
+                      <span
+                        className={
+                          "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium " +
+                          (isAlive
+                            ? "bg-status-good-bg text-status-good"
+                            : "bg-status-critical-bg text-status-critical")
+                        }
+                      >
+                        <span
+                          className={
+                            "size-1.5 rounded-full " +
+                            (isAlive ? "bg-status-good" : "bg-status-critical")
+                          }
+                          aria-hidden="true"
+                        />
+                        {worker.status}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 text-ink-secondary">
+                      {new Date(worker.lastHeartbeat).toLocaleString()}
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 };

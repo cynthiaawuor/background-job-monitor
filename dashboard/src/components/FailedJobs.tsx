@@ -21,51 +21,73 @@ export const FailedJobs = ({ failedJobs, onRetry }: Props) => {
   };
 
   return (
-    <section>
-      <h2>Failed Jobs</h2>
+    <section className="flex flex-col overflow-hidden rounded-xl border border-hairline bg-surface shadow-sm">
+      <div className="flex items-center justify-between border-b border-hairline px-5 py-4">
+        <h2 className="text-base font-semibold text-ink">Failed Jobs</h2>
+        {failedJobs.length > 0 && (
+          <span className="rounded-full bg-status-critical-bg px-2.5 py-1 text-xs font-medium text-status-critical tabular-nums">
+            {failedJobs.length}
+          </span>
+        )}
+      </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Job ID</th>
-            <th>Type</th>
-            <th>Worker</th>
-            <th>Error</th>
-            <th>Stack Trace</th>
-            <th>Retry</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {failedJobs.map((job) => (
-            <tr key={job.id}>
-              <td>{job.id}</td>
-
-              <td>{job.type}</td>
-
-              <td>{job.workerId ?? "-"}</td>
-
-              <td>{job.error ?? "-"}</td>
-
-              <td>
-                <pre
-                  style={{
-                    whiteSpace: "pre-wrap",
-                    margin: 0,
-                    maxWidth: "500px",
-                  }}
-                >
-                  {job.stackTrace ?? "-"}
-                </pre>
-              </td>
-
-              <td>
-                <button onClick={() => handleRetry(job.id)}>Retry</button>
-              </td>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-hairline text-xs tracking-wide text-ink-muted uppercase">
+              <th className="px-5 py-2.5 font-medium">Job ID</th>
+              <th className="px-5 py-2.5 font-medium">Type</th>
+              <th className="px-5 py-2.5 font-medium">Worker</th>
+              <th className="px-5 py-2.5 font-medium">Error</th>
+              <th className="px-5 py-2.5 font-medium">Stack Trace</th>
+              <th className="px-5 py-2.5 font-medium">Retry</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody className="divide-y divide-hairline">
+            {failedJobs.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-5 py-6 text-center text-ink-muted">
+                  No failed jobs.
+                </td>
+              </tr>
+            ) : (
+              failedJobs.map((job) => (
+                <tr key={job.id} className="align-top hover:bg-ink/5">
+                  <td className="max-w-40 truncate px-5 py-3 font-mono text-xs text-ink-secondary">
+                    {job.id}
+                  </td>
+
+                  <td className="px-5 py-3 text-ink">{job.type}</td>
+
+                  <td className="px-5 py-3 font-mono text-xs text-ink-secondary">
+                    {job.workerId ?? "-"}
+                  </td>
+
+                  <td className="px-5 py-3 text-status-critical">
+                    {job.error ?? "-"}
+                  </td>
+
+                  <td className="px-5 py-3">
+                    <pre className="max-w-125 overflow-x-auto rounded-md bg-code-bg p-2 font-mono text-xs whitespace-pre-wrap text-ink-secondary">
+                      {job.stackTrace ?? "-"}
+                    </pre>
+                  </td>
+
+                  <td className="px-5 py-3">
+                    <button
+                      onClick={() => handleRetry(job.id)}
+                      className="rounded-md border border-accent-border bg-accent-bg px-3 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    >
+                      Retry
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 };

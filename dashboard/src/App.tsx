@@ -162,18 +162,27 @@ export default function App() {
   }, []);
 
   return (
-    <main>
-      <h1>Background Job Monitor</h1>
+    <main className="mx-auto flex min-h-svh w-full max-w-6xl flex-col gap-8 px-6 py-10 text-left">
+      <header className="flex items-center justify-between">
+        <h1 className="text-2xl font-medium tracking-tight text-ink sm:text-3xl">
+          Background Job Monitor
+        </h1>
+        <span className="flex items-center gap-2 rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-medium text-ink-secondary">
+          <span className="size-2 rounded-full bg-status-good" aria-hidden="true" />
+          Live
+        </span>
+      </header>
 
-      <QueueDepth queueDepth={queueDepth} />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <QueueDepth queueDepth={queueDepth} />
+        <Workers workers={workers} />
+      </div>
 
       <InFlightJobs inFlightJobs={inFlightJobs} />
 
       <CompletedJobs completedJobs={completedJobs} />
 
       <FailedJobs failedJobs={failedJobs} onRetry={refetchFailedJobs} />
-
-      <Workers workers={workers} />
     </main>
   );
 }
