@@ -1,9 +1,10 @@
-import { type Server, WebSocketServer } from "ws";
+import type { Server as HttpServer } from "node:http";
+import { WebSocketServer } from "ws";
 
-let webSocketServer: Server;
+let webSocketServer: WebSocketServer;
 
-export const startWebSocketServer = (port: number) => {
-  webSocketServer = new WebSocketServer({ port });
+export const startWebSocketServer = (server: HttpServer) => {
+  webSocketServer = new WebSocketServer({ server });
   webSocketServer.on("connection", (socket) => {
     socket.send(
       JSON.stringify({
@@ -17,7 +18,7 @@ export const startWebSocketServer = (port: number) => {
       console.log("Dashboard disconnected");
     });
   });
-  console.log(`WebSocket server running on ws://localhost:${port}`);
+  console.log("WebSocket server attached to HTTP server");
 };
 
 export const broadcast = (payload: unknown) => {

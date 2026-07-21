@@ -1,19 +1,18 @@
 import { and, eq, sql } from "drizzle-orm";
 import { jobs } from "../db/schema/jobs.js";
-import { db } from "../server.js";
 import { createJobEvent } from "../queries/job_events.js";
 import {
   createJob,
   findJobById,
   findOldestQueuedJob,
   reclaimWorkerJobs,
-  updateJob,
 } from "../queries/jobs.js";
 import { jobEvents } from "../db/schema/job_events.js";
 import { markWorkersDead } from "../queries/workers.js";
 import { calculateBackOff } from "./backoff.js";
 import { WebSocketEvents } from "../websocket/events.js";
 import { broadcast } from "../websocket/server.js";
+import { db } from "../db/db-connection.js";
 
 export const enqueueJob = async (
   type: string,
@@ -92,7 +91,7 @@ export const completeJob = async (jobId: string, workerId: string) => {
    * Update job only if worker still owns it
    */
 
-  const updatedJob = await db
+  const [updatedJob] = await db
     .update(jobs)
     .set({
       state: "completed",
@@ -107,7 +106,7 @@ export const completeJob = async (jobId: string, workerId: string) => {
     )
     .returning();
 
-  if (!updateJob) {
+  if (!updatedJob) {
     return { message: "Job already reclaimed by another worker." };
   }
   //update job event history
@@ -176,7 +175,7 @@ export const failJob = async (
   /**--------------------------------------------------------
    * No retries remaining
    ----------------------------------------------------------*/
-  const updatedJob = await db
+  const [updatedJob] = await db
     .update(jobs)
     .set({
       state: "failed",
@@ -196,7 +195,7 @@ export const failJob = async (
   /**
    * Only current owner may fail the job
    */
-  if (!updateJob) {
+  if (!updatedJob) {
     return { message: "Job already reclaimed by another worker." };
   }
   broadcast({

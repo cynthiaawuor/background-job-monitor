@@ -1,5 +1,8 @@
-import { createWorker, updateHeartbeat } from "../queries/workers.js";
-import { claimNextJob, completeJob, failJob } from "../services/queue.js";
+import "dotenv/config";
+import { createWorker, updateHeartbeat } from "./queries/workers.js";
+import { claimNextJob, completeJob, failJob } from "./services/queue.js";
+import { broadcast } from "./websocket/server.js";
+import { WebSocketEvents } from "./websocket/events.js";
 
 const sleep = async (ms: number) => {
   return new Promise((resolve) => {
@@ -12,14 +15,18 @@ const processJob = async (job: any) => {
 
   console.log(job.payload);
 
-  /*  simulating the job processing
+  /* **********************************************
+   simulating the job processing
    * TODO: To be replaced with actual job processing
-   */
+   *************************************************/
   await sleep(3000);
 
   console.log(`Finished Processing ${job.id}`);
 };
 
+/************************************************
+ * Worker sends heartbeat every 10s while running
+ ******************************************************/
 const heartbeatLoop = async (workerId: string) => {
   while (true) {
     const worker = await updateHeartbeat(workerId);
@@ -27,30 +34,23 @@ const heartbeatLoop = async (workerId: string) => {
       console.log("Worker is not alive");
       process.exit(1);
     }
-
+    broadcast({
+      type: WebSocketEvents.WORKER_UPDATED,
+      worker,
+    });
     console.log("worker heartbeat");
     await sleep(10000);
   }
 };
-const startWorker = async () => {
-  const workerId = `worker-${Math.floor(Math.random() * 100)}`;
+export const startWorker = async (workerId: string) => {
   await createWorker(workerId);
-  /**
-   * Worker sends heartbeat every 10s while running
-   */
-  // setInterval(async () => {
-  //   const worker = await updateHeartbeat(workerId);
-  //   if (!worker) {
-  //     console.log("Woker has been is not alive");
-  //     return;
-  //   }
-  // }, 10000);
 
   heartbeatLoop(workerId);
 
-  /** Worker runs and claims next job,
+  /*************************************************************
+   *  Worker runs and claims next job,
    * Waits 5sec if no job is found and continues claiming other jobs.
-   */
+   *****************************************************/
   while (true) {
     const job = await claimNextJob(workerId);
 
@@ -72,5 +72,3 @@ const startWorker = async () => {
     }
   }
 };
-
-startWorker().catch(console.error);

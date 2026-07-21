@@ -1,16 +1,16 @@
 import { and, desc, eq, gt, lt } from "drizzle-orm";
 import { workers } from "../db/schema/workers.js";
-import { db } from "../server.js";
+import { db } from "../db/db-connection.js";
 
 /**
- * 
- * @param id 
+ *
+ * @param id
  * @returns a worker object.  worker: { id: string;
     status: "alive" | "dead";
     lastHeartbeat: Date;
     createdAt: Date;
     updatedAt: Date;} | undefined
- * 
+ *
  * Incase a worker already exists, ignore and continue
  */
 export const createWorker = async (id: string) => {
@@ -26,7 +26,7 @@ export const createWorker = async (id: string) => {
 };
 
 export const updateHeartbeat = async (workerId: string) => {
-  return await db
+  const [worker] = await db
     .update(workers)
     .set({
       lastHeartbeat: new Date(),
@@ -34,6 +34,7 @@ export const updateHeartbeat = async (workerId: string) => {
     })
     .where(and(eq(workers.id, workerId), eq(workers.status, "alive")))
     .returning();
+  return worker;
 };
 
 export const findWorkerById = async (workerId: string) => {
